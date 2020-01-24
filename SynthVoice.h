@@ -17,16 +17,29 @@
 
 class SynthVoice : public SynthesiserVoice {
 public:
-	SynthVoice(Array<float>& wavetable1ToUse, Array<float>& wavetable2ToUse) :
+	SynthVoice(Array<float>& wavetable1ToUse, Array<float>& wavetable2ToUse, float& env1Value, bool& env1Status) :
 		wavetable1(wavetable1ToUse), 
 		tableSize1(wavetable1.size()),
 		wavetable2(wavetable2ToUse),
-		tableSize2(wavetable2.size())
+		tableSize2(wavetable2.size()),
+		env1Value(&env1Value),
+		env1Status(&env1Status)
 	{
 		this->setWavetable(wavetable1, 1);
 		this->setWavetable(wavetable2, 2);
 
 		adsr.setSampleRate(getSampleRate());
+
+		filter.parameters->type = dsp::StateVariableFilter::Parameters<float>::Type::lowPass;
+		filter.parameters->setCutOffFrequency(sampleRate, 22000, 0.5);
+	}
+	void setDSPSpecs(int samplesPerBlock, int numChannels) {
+		specs.maximumBlockSize = samplesPerBlock;
+		specs.sampleRate = sampleRate;
+		specs.numChannels = numChannels;
+
+		filter.prepare(specs);
+		filter.reset();
 	}
 	//==============================================================================
 	void setADSRSampleRate(double ADSRsampleRate) {
@@ -112,12 +125,32 @@ public:
 		osc2WTPos = *wtpos;
 		osc2Phase = *phase;
 	}
+	void updateFilter(float* frequency, float* resonance, float* drive, float* level, float* routeOsc1, float* routeOsc2, float* routeMaster) {
+		filter.parameters->setCutOffFrequency(sampleRate, *frequency, *resonance);
+		filterFreq = *frequency;
+		filterRes = *resonance;
+		filterDrive = *drive;
+		filterLevel = *level;
+
+		if (*routeOsc1) filterRoute = 0;
+		else if (*routeOsc2) filterRoute = 1;
+		else filterRoute = 2;
+	}
+	void setFilterType(int typeId) {
+		if (typeId == 1)
+			filter.parameters->type = dsp::StateVariableFilter::Parameters<float>::Type::lowPass;
+		else if(typeId == 2)
+			filter.parameters->type = dsp::StateVariableFilter::Parameters<float>::Type::bandPass;
+		else
+			filter.parameters->type = dsp::StateVariableFilter::Parameters<float>::Type::highPass;
+	}
 	bool canPlaySound(SynthesiserSound* sound) {
 		return dynamic_cast<SynthSound*>(sound) != nullptr;
 	}
 	void startNote(int midiNoteNumber, float velocity, SynthesiserSound* sound, int currentPitchWheelPosition) {
 		adsr.setParameters(adsrParams);
 		adsr.noteOn();
+		*env1Status = 1;
 
 		old1Oct = osc1Oct;
 		old2Oct = osc2Oct;
@@ -144,6 +177,7 @@ public:
 	}
 	void stopNote(float velocity, bool allowTailOff) {
 		adsr.noteOff();
+		*env1Status = 0;
 	}
 	void pitchWheelMoved(int newPitchWheelValue) {
 		
@@ -197,17 +231,34 @@ public:
 				float value1 = table1[index0 + 1];
 
 				float currentSample = (value0 + frac * (value1 - value0)) * osc1Gain * osc1Status;
+
+				//=================FILTERING OSC1=================
+				if(filterRoute == 0) currentSample = filter.processSample(currentSample) * (1 + filterDrive) * filterLevel + currentSample * (1 - filterLevel);
 				//================================================
+
 				index0 = (unsigned int)(currentIndex2 * tableSize2);
 				frac = currentIndex2 * tableSize2 - (float)index0;
 				value0 = table2[index0];
 				if (index0 + 1 >= tableSize2) index0 = index0 - tableSize2;
 				value1 = table2[index0 + 1];
 
-				currentSample += (value0 + frac * (value1 - value0)) * osc2Gain * osc2Status;
-				for (int j = 0; j < outputBuffer.getNumChannels(); ++j) 
-					outputBuffer.addSample(j, startSample, currentSample * adsr.getNextSample() * masterGain);
+				float sampleOsc2 = (value0 + frac * (value1 - value0)) * osc2Gain * osc2Status;
 
+				//=================FILTERING OSC2=================
+				if (filterRoute == 1) sampleOsc2 = filter.processSample(sampleOsc2) * (1 + filterDrive) * filterLevel + sampleOsc2 * (1 - filterLevel);
+				//================================================
+
+				currentSample += sampleOsc2;
+
+				//=================FILTERING MASTER===============
+				if (filterRoute == 2) currentSample = filter.processSample(currentSample) * (1 + filterDrive) * filterLevel + currentSample * (1 - filterLevel);
+				//================================================
+				float adsrValue = adsr.getNextSample();
+				*env1Value = adsrValue;
+
+				for (int j = 0; j < outputBuffer.getNumChannels(); ++j) {
+					outputBuffer.addSample(j, startSample, currentSample * adsrValue * masterGain);
+				}
 				if ((currentIndex1 += tableDelta1) > 1) currentIndex1 -= 1;
 				if ((currentIndex2 += tableDelta2) > 1) currentIndex2 -= 1;
 
@@ -226,6 +277,9 @@ public:
 
 	}
 private:
+	float* env1Value;
+	bool* env1Status;
+
 	Array<float> wavetable1;
 	Array<float> wavetable2;
 	//AudioSampleBuffer wavetable;
@@ -286,4 +340,12 @@ private:
 
 	int subtableId1 = 0;
 	int subtableId2 = 0;
+
+	dsp::StateVariableFilter::Filter <float> filter;
+	dsp::ProcessSpec specs;
+	float filterFreq;
+	float filterRes;
+	float filterDrive;
+	float filterLevel;
+	int filterRoute;
 };

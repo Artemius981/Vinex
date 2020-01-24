@@ -66,6 +66,7 @@ public:
 
 	//==============================================================================
 	void setVoiceWavetable(int boxId, int oscId);
+	void setFilterType(int typeId);
 
 	AudioSampleBuffer sineTable;
 	AudioSampleBuffer sawtoothTable;
@@ -79,17 +80,15 @@ public:
 
 	AudioProcessorValueTreeState treeState;
 
+	bool env1Status = 0;
+	float env1Value = 0.0f;
+
 private:
 	float lastSampleRate;
 	const int tableSize = 1 << 11;
 	float level;
 
 	int numVoices = 5;
-
-	dsp::FFT forwardFFT;
-	dsp::FFT inverseFFT;
-	int fftSize = 1 << 11;
-	float fftData[2 * (1 << 11)];
 
 	Synthesiser Synth;
 	SynthVoice* Voice;

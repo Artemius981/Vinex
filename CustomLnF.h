@@ -15,7 +15,8 @@
 class lnf : public LookAndFeel_V4 {
 public:
 	void drawRotarySlider(Graphics& g, int x, int y, int width, int height, float sliderPos,
-		const float rotaryStartAngle, const float rotaryEndAngle, Slider& slider) {
+		const float rotaryStartAngle, const float rotaryEndAngle, Slider& slider) 
+	{
 
 		const float radius = jmin(width / 2, height / 2);
 		const float centreX = x + width * 0.5f;
@@ -42,8 +43,27 @@ public:
 	//	
 	//}
 
+	void drawTickBox(Graphics& g, Component& btn, float x, float y, float w, float h, bool ticked,
+		bool isEnabled, bool shouldDrawButtonAsHighlighted, bool shouldDrawButtonAsDown)
+	{
+		int tickOff = 2;
+
+		w--; h--;
+
+		Colour boundingBoxColour = Colour(54, 54, 54);
+		Colour tickColour = Colour(245, 245, 245);
+
+		g.setColour(boundingBoxColour);
+		g.drawRect(x, y, w, h, 1.0f);
+
+		if (ticked) {
+			g.setColour(boundingBoxColour);
+			g.fillRect(x + tickOff, y + tickOff, w - 2 * tickOff, h - 2 * tickOff);
+		}
+	}
+
 	Font getAestheticsFont() {
-		Font Helve(Font(Typeface::createSystemTypefaceFor(BinaryData::_9207_otf, BinaryData::_9207_otfSize)));
+		Font Helve(Font(Typeface::createSystemTypefaceFor(BinaryData::_9206_otf, BinaryData::_9206_otfSize)));
 		return Helve;
 	}
 };

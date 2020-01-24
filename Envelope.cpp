@@ -18,14 +18,18 @@ EnvVisualiser::EnvVisualiser(OsctestAudioProcessor& p) : processor(p) {
 		Colour(129, 34, 106),	//wave
 		Colour(110, 110, 110)	//ADSR Lines
 	};
+	attack = processor.treeState.getRawParameterValue("env1Attack");
+	decay = processor.treeState.getRawParameterValue("env1Decay");
+	sustain = processor.treeState.getRawParameterValue("env1Sustain");
+	release = processor.treeState.getRawParameterValue("env1Release");
+	adsrValue = &processor.env1Value;
+	adsrStatus = &processor.env1Status;
+
+	startTimerHz(30);
 }
 void EnvVisualiser::paint(Graphics& g) {
 	wave.clear();
 	lines.clear();
-	float* attack = processor.treeState.getRawParameterValue("env1Attack");
-	float* decay = processor.treeState.getRawParameterValue("env1Decay");
-	float* sustain = processor.treeState.getRawParameterValue("env1Sustain");
-	float* release = processor.treeState.getRawParameterValue("env1Release");
 
 	int height = getHeight();
 	int startY = getHeight() - 20;
@@ -37,11 +41,39 @@ void EnvVisualiser::paint(Graphics& g) {
 	lines.addLineSegment(Line<float>(startX + *attack * coef, 20, startX + *attack * coef, height - 20), 1.0f);
 	startY = 20;
 	startX += *attack * coef;
-	wave.lineTo(startX + *decay * coef, 20 + 114* (1 - *sustain));
+	wave.lineTo(startX + *decay * coef, 20 + 114 * (1 - *sustain));
 	lines.addLineSegment(Line<float>(startX + *decay * coef, 20 + 114 * (1 - *sustain), startX + *decay * coef, height - 20), 1.0f);
 	startX += *decay * coef;
+	sustainX = startX;
 	startY += 114 * (1 - *sustain);
 	wave.lineTo(startX + *release * coef, getHeight() - 20);
+
+	realtimeLineXInc = 0.67f;
+
+	if (realtimeLineX < sustainX && !*adsrStatus && *adsrValue != 0 && !endingRelease) 
+	{
+		realtimeLineX = sustainX + realtimeLineXInc;
+		endingRelease = true;
+		value = *sustain;
+		releaseInc = *sustain * realtimeLineXInc / (startX + *release * coef - sustainX);
+	}
+	if ((int)realtimeLineX != sustainX && *adsrStatus && !endingRelease)
+	{
+		g.drawLine(realtimeLineX, 20 + 114 * (1 - *adsrValue), realtimeLineX, height - 20);
+		realtimeLineX += realtimeLineXInc;
+	}
+	else if (((int)realtimeLineX == sustainX || (int)realtimeLineX != (startX + *release * coef)) && !*adsrStatus && *adsrValue != 0 && !endingRelease) 
+	{
+		g.drawLine(realtimeLineX, 20 + 114 * (1 - *adsrValue), realtimeLineX, height - 20);
+		realtimeLineX += realtimeLineXInc;
+	}
+	else if (endingRelease)
+	{
+		value -= releaseInc;
+		g.drawLine(realtimeLineX, 20 + 114 * (1 - value), realtimeLineX, height - 20);
+		realtimeLineX += realtimeLineXInc;
+		if (realtimeLineX < sustainX) DBG("POLNAYA PIZDA!");
+	}
 
 	g.setColour(customColours[1]);
 	g.drawLine(0, height - 20, getWidth(), height - 20);
@@ -52,6 +84,20 @@ void EnvVisualiser::paint(Graphics& g) {
 void EnvVisualiser::resized() {
 
 }
+void EnvVisualiser::timerCallback() 
+{
+	if (*adsrStatus && endingRelease) 
+	{
+		realtimeLineX = 20;
+		endingRelease = false;
+	}
+	if (*adsrStatus || *adsrValue != 0) repaint();
+	else
+	{
+		realtimeLineX = 20;
+		endingRelease = false;
+	}
+}
 EnvVisualiser::~EnvVisualiser() {
 
 }
@@ -59,11 +105,9 @@ EnvVisualiser::~EnvVisualiser() {
 Envelope::Envelope(OsctestAudioProcessor& p) : processor(p), envVisual(p)
 {
 	customColours = {
-		Colour(187, 187, 187)
+		Colour(187, 187, 187),
+		Colour(220, 220, 220)
 	};
-    // In your constructor, you should add any child components, and
-    // initialise any special settings that your component needs.
-
 	attackSlider.setSliderStyle(Slider::SliderStyle::LinearBarVertical);
 	attackSlider.setRange(0.01f, 5.0f, 0.01f);
 	attackSlider.setValue(0.01f);
@@ -110,6 +154,8 @@ void Envelope::sliderValueChanged(Slider* sliderChanged) {
 
 void Envelope::paint (Graphics& g)
 {
+	g.fillAll(customColours[1]);
+
 	g.setColour(customColours[0]);
 	g.fillRect(202, 33, 246, 154);
 

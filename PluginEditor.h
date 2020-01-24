@@ -15,6 +15,7 @@
 #include "Envelope.h"
 #include "OscEditor.h"
 #include "FilterEditor.h"
+#include "EducationalSystem.h"
 
 //==============================================================================
 /**
@@ -29,10 +30,14 @@ public:
     //==============================================================================
     void paint (Graphics&) override;
     void resized() override;
+	void addItemToContainer(int containerId, bool useComponent, Component* component);
 
 	std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> masterGainAttachment;
+	OwnedArray<AudioProcessorValueTreeState::SliderAttachment> attachments;
 
 private:
+	void calculateObjectsCoordinates(Rectangle<int>& container, std::vector <std::pair<int, int>>& objectsSizes,
+		int spaceFromBorders, std::vector<std::pair<int, int>>& outputVector);
 	//void comboBoxChanged(ComboBox* box);
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
@@ -45,6 +50,23 @@ private:
 	OscEditor osc1Gui;
 	OscEditor osc2Gui;
 	FilterEditor filterGui;
+	EducationalSystem eduSystem;
+
+	FlexBox middleContainer;
+	FlexBox bottomContainer;
+
+	int middleContainerWidth;
+	int middleContainerHeight = 289;
+	int middleContainerItemWidth = 290;
+	int middleContainerItemHeight = 270;
+
+	int bottomContainerWidth;
+	int bottomContainerHeight = 234;
+	int bottomContainerItemWidth = 462;
+	int bottomContainerItemHeight = 215;
+
+	Rectangle <int> middleContainerArea;
+	Rectangle <int> bottomContainerArea;
 
 	lnf lf;
 

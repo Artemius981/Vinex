@@ -15,7 +15,7 @@
 #include "CustomLnF.h"
 
 //==============================================================================
-class EnvVisualiser : public Component
+class EnvVisualiser : public Component, public Timer
 {
 public:
 	EnvVisualiser(OsctestAudioProcessor& p);
@@ -23,11 +23,26 @@ public:
 
 	void paint(Graphics&) override;
 	void resized() override;
+	void timerCallback();
 
 private:
 	Path wave;
 	Path lines;
 	OsctestAudioProcessor& processor;
+
+	float* attack;
+	float* decay;
+	float* sustain;
+	float* release;
+	float* adsrValue;
+	bool* adsrStatus;
+
+	int sustainX;
+	float realtimeLineX = 20.f;
+	float realtimeLineXInc = 1.0;
+	bool endingRelease = false;
+	float value = 0;
+	float releaseInc;
 
 	Array<Colour> customColours;
 

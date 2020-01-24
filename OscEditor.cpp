@@ -42,7 +42,6 @@ WaveVisualiser::~WaveVisualiser() {
 }
 //==============================================================================
 void OscEditor::comboBoxChanged(ComboBox* comboChanged) {
-	Logger::outputDebugString(std::to_string(wavePicker.getSelectedId() - 1));
 	if (processor.currentTables[oscId - 1] != (wavePicker.getSelectedId() - 1)) {
 		processor.setVoiceWavetable(wavePicker.getSelectedId() - 1, oscId);
 		processor.currentTables[oscId - 1] = wavePicker.getSelectedId() - 1;
@@ -54,7 +53,8 @@ OscEditor::OscEditor(OsctestAudioProcessor& p, int oscId) : processor(p), oscNum
 	customColours = {
 		Colour(183, 183, 183),	//wtback
 		Colour(235, 235, 235),	//wt picker text
-		Colour(54, 54, 54)		//status button
+		Colour(54, 54, 54),		//status button
+		Colour(220, 220, 220)	//background color
 	};
     // In your constructor, you should add any child components, and
     // initialise any special settings that your component needs.
@@ -126,8 +126,8 @@ OscEditor::OscEditor(OsctestAudioProcessor& p, int oscId) : processor(p), oscNum
 	wavePicker.addListener(this);
 	addAndMakeVisible(wavePicker);
 
-	addAndMakeVisible(statusButton);
-	statusButton.setColour(statusButton.textColourId, customColours[2]);
+	statusButton.setLookAndFeel(&lf);
+	addAndMakeVisible(&statusButton);
 
 	addAndMakeVisible(&tableWave);
 
@@ -150,12 +150,15 @@ OscEditor::~OscEditor()
 }
 void OscEditor::paint(Graphics& g)
 {
+	g.fillAll(customColours[3]);
+
 	g.setFont(lf.getAestheticsFont().withPointHeight(13.5));
+	g.setColour(Colours::black);
 
 	g.drawText("OCT", 20, 173, 31, 19, Justification::left);
 	g.drawText("SEMI", 90, 173, 34, 19, Justification::left);
-	g.drawText("PAN", 165, 173, 26, 19, Justification::left);
-	g.drawText("LEVEL", 230, 173, 43, 19, Justification::left);
+	g.drawText("PAN", 167, 173, 26, 19, Justification::left);
+	g.drawText("LEVEL", 231, 173, 43, 19, Justification::left);
 
 	g.drawText("WT POS", 42, 238, 53, 19, Justification::left);
 	g.drawText("none", 128, 238, 33, 19, Justification::left);

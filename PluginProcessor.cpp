@@ -49,10 +49,19 @@ OsctestAudioProcessor::OsctestAudioProcessor()
 		std::make_unique<AudioParameterFloat>("env1Attack", "Envelope 1 Attack", NormalisableRange<float>(0.01f, 5.0f), 0.01f),
 		std::make_unique<AudioParameterFloat>("env1Decay", "Envelope 1 Decay", NormalisableRange<float>(0.1f, 2.0f), 0.1f),
 		std::make_unique<AudioParameterFloat>("env1Sustain", "Envelope 1 Sustain", NormalisableRange<float>(0.0f, 1.0f), 1.0f),
-		std::make_unique<AudioParameterFloat>("env1Release", "Envelope 1 Release", NormalisableRange<float>(0.01f, 5.0f), 0.01f)
-		}),
-	forwardFFT(10),
-	inverseFFT(10)
+		std::make_unique<AudioParameterFloat>("env1Release", "Envelope 1 Release", NormalisableRange<float>(0.01f, 5.0f), 0.01f),
+		std::make_unique<AudioParameterFloat>("env1Value", "ADSR Value", NormalisableRange<float>(0.0f, 1.0f), 0.0f),
+		std::make_unique<AudioParameterBool>("env1Status", "ADSR Status", 0),
+
+		std::make_unique<AudioParameterFloat>("filterCutoff", "Filter Cutoff", NormalisableRange<float>(10, 22000, 1, 0.1822), 22000),
+		std::make_unique<AudioParameterFloat>("filterRes", "Filter Resonanse", NormalisableRange<float>(0.0f, 3.0f), 0.5f),
+		std::make_unique<AudioParameterFloat>("filterDrive", "Filter Drive", NormalisableRange<float>(0.0f, 1.0f), 0.0f),
+		std::make_unique<AudioParameterFloat>("filterGain", "Filter Level", NormalisableRange<float>(0.0f, 1.0f), 1.0f),
+		std::make_unique<AudioParameterChoice>("filterType", "Filter Type", StringArray("Lowpass", "Bandpass", "Highpass"), 0),
+		std::make_unique<AudioParameterBool>("filterRouteOsc1", "Route to OSC1", 1),
+		std::make_unique<AudioParameterBool>("filterRouteOsc2", "Route to OSC2", 0),
+		std::make_unique<AudioParameterBool>("filterRouteMaster", "Route to Master", 0)
+		})
 #endif
 {
 	treeState.state = ValueTree("savedParams");
@@ -71,7 +80,7 @@ OsctestAudioProcessor::OsctestAudioProcessor()
 
 	for (int i = 0; i < numVoices; i++) {
 		//Logger::outputDebugString(std::to_string(wavetables[0][512]));
-		Synth.addVoice(new SynthVoice(wavetables[currentTables[0]], wavetables[currentTables[1]]));
+		Synth.addVoice(new SynthVoice(wavetables[currentTables[0]], wavetables[currentTables[1]], env1Value, env1Status));
 	}
 	Synth.clearSounds();
 	Synth.addSound(new SynthSound());
@@ -82,9 +91,6 @@ OsctestAudioProcessor::~OsctestAudioProcessor()
 }
 //===================================
 void OsctestAudioProcessor::createSinTable() {
-	//sineTable.setSize(1, tableSize + 1);
-	//auto * samples = sineTable.getWritePointer(0);
-
 	auto* samples = suka.getRawDataPointer();
 
 	auto angleDelta = MathConstants<double>::twoPi / tableSize;
@@ -95,14 +101,10 @@ void OsctestAudioProcessor::createSinTable() {
 		samples[i] = (float)sample;
 		currentAngle += angleDelta;
 	}
-	//samples[tableSize] = samples[0];
 	wavetables.add(suka);
 }
 
 void OsctestAudioProcessor::createSawtoothTable() {
-	//sawtoothTable.setSize(1, tableSize + 1);
-	//auto * samples = sawtoothTable.getWritePointer(0);
-
 	auto angleDelta = MathConstants<double>::twoPi / tableSize;
 	auto currentAngle = 0.0;
 
@@ -115,29 +117,27 @@ void OsctestAudioProcessor::createSawtoothTable() {
 	wavetables.add(suka);
 }
 void OsctestAudioProcessor::createSquareTable() {
-	//squareTable.setSize(1, tableSize + 1);
-	//auto* samples = squareTable.getWritePointer(0);
-
 	auto* samples = suka.getRawDataPointer();
 
 	for (int i = 0; i < tableSize; i++) {
 		auto sample = i < tableSize / 2 ? 1.0 : -1.0;
 		samples[i] = (float)sample;
 	}
-	//samples[tableSize] = samples[0];
 	wavetables.add(suka);
 }
 
 //===================================
 void OsctestAudioProcessor::setVoiceWavetable(int boxId, int oscId) {
-	//if (squareTable.getNumSamples() != (tableSize + 1)) return;
-	//AudioSampleBuffer refWavetable = sineTable;
-	//currentTables[oscId - 1] = boxId;
 	for (int i = 0; i < numVoices; i++) {
 		if ((Voice = dynamic_cast<SynthVoice*>(Synth.getVoice(i))))
 			Voice->setWavetable(wavetables[boxId], oscId);
 	}
-	//Logger::outputDebugString(std::to_string(boxId) + " " + std::to_string(oscId));
+}
+void OsctestAudioProcessor::setFilterType(int typeId) {
+	for (int i = 0; i < numVoices; i++) {
+		if ((Voice = dynamic_cast<SynthVoice*>(Synth.getVoice(i))))
+			Voice->setFilterType(typeId);
+	}
 }
 
 //==============================================================================
@@ -210,6 +210,11 @@ void OsctestAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
 	lastSampleRate = sampleRate;
 
 	Synth.setCurrentPlaybackSampleRate(sampleRate);
+
+	for (int i = 0; i < numVoices; i++) {
+		if ((Voice = dynamic_cast<SynthVoice*>(Synth.getVoice(i))))
+			Voice->setDSPSpecs(samplesPerBlock, getTotalNumOutputChannels());
+	}
 
 	//auto numberOfOscillators = 1;
 
@@ -284,6 +289,15 @@ void OsctestAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer
 				treeState.getRawParameterValue("env1Decay"),
 				treeState.getRawParameterValue("env1Sustain"),
 				treeState.getRawParameterValue("env1Release")
+			);
+			Voice->updateFilter(
+				treeState.getRawParameterValue("filterCutoff"),
+				treeState.getRawParameterValue("filterRes"),
+				treeState.getRawParameterValue("filterDrive"),
+				treeState.getRawParameterValue("filterGain"),
+				treeState.getRawParameterValue("filterRouteOsc1"),
+				treeState.getRawParameterValue("filterRouteOsc2"),
+				treeState.getRawParameterValue("filterRouteMaster")
 			);
 		}
 	}

@@ -13,7 +13,7 @@
 #include "PluginProcessor.h"
 #include "CustomLnF.h"
 
-class FilterEditor : public Component
+class FilterEditor : public Component, ComboBox::Listener
 {
 public:
 	FilterEditor(OsctestAudioProcessor& p);
@@ -21,10 +21,11 @@ public:
 
 	void paint(Graphics&) override;
 	void resized() override;
-	//void comboBoxChanged(ComboBox* comboChanged);
+	void comboBoxChanged(ComboBox* comboChanged);
 
 	OwnedArray<AudioProcessorValueTreeState::SliderAttachment> attachments;
 	OwnedArray<AudioProcessorValueTreeState::ButtonAttachment> buttonAttachments;
+	OwnedArray<AudioProcessorValueTreeState::ComboBoxAttachment> comboBoxAttachments;
 private:
 	OsctestAudioProcessor& processor;
 	lnf lf;
@@ -33,6 +34,17 @@ private:
 	Slider resKnob;
 	Slider driveKnob;
 	Slider gainKnob;
+	Slider routeValue;
+
+	ComboBox typeMenu;
+
+	ToggleButton routeOsc1;
+	ToggleButton routeOsc2;
+	ToggleButton routeMaster;
+	// labels for route buttons
+	Label routeOsc1Label;
+	Label routeOsc2Label;
+	Label routeMasterLabel;
 
 	Array<Colour> customColours;
 
