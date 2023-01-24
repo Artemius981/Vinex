@@ -11,7 +11,7 @@
 class VinexAudioProcessorEditor  : public juce::AudioProcessorEditor
 {
 public:
-    VinexAudioProcessorEditor (VinexAudioProcessor&);
+    VinexAudioProcessorEditor (VinexAudioProcessor&, juce::AudioProcessorValueTreeState& apvts);
     ~VinexAudioProcessorEditor() override;
 
     //==============================================================================
@@ -20,6 +20,7 @@ public:
 
 private:
     VinexAudioProcessor& audioProcessor;
+    juce::AudioProcessorValueTreeState& apvts;
 
     VinexLookAndFeel vinexLookAndFeel;
 

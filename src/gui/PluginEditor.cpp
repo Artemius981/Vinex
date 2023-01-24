@@ -4,8 +4,8 @@
 #include "../Constants.h"
 
 //==============================================================================
-VinexAudioProcessorEditor::VinexAudioProcessorEditor (VinexAudioProcessor& p)
-    : AudioProcessorEditor (&p), audioProcessor (p)
+VinexAudioProcessorEditor::VinexAudioProcessorEditor (VinexAudioProcessor& p, juce::AudioProcessorValueTreeState& apvts)
+    : AudioProcessorEditor (&p), audioProcessor (p), apvts(apvts)
 {
     setSize (constants::pluginWidth, constants::pluginHeight);
     setLookAndFeel(&vinexLookAndFeel);

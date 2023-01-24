@@ -12,6 +12,7 @@ VinexAudioProcessor::VinexAudioProcessor()
                        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
                      #endif
                        )
+                       , apvts(*this, nullptr, juce::Identifier ("Vinex"), createParamLayout())
 #endif
 {
 }
@@ -136,16 +137,43 @@ bool VinexAudioProcessor::hasEditor() const
 
 juce::AudioProcessorEditor* VinexAudioProcessor::createEditor()
 {
-    return new VinexAudioProcessorEditor (*this);
+    return new VinexAudioProcessorEditor (*this, apvts);
 }
 
 //==============================================================================
 void VinexAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
+    auto state = apvts.copyState();
+    std::unique_ptr<juce::XmlElement> xml (state.createXml());
+    copyXmlToBinary (*xml, destData);
 }
 
 void VinexAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
+    std::unique_ptr<juce::XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
+
+    if (xmlState.get() != nullptr)
+        if (xmlState->hasTagName (apvts.state.getType()))
+            apvts.replaceState (juce::ValueTree::fromXml (*xmlState));
+}
+
+juce::AudioProcessorValueTreeState::ParameterLayout VinexAudioProcessor::createParamLayout()
+{
+    juce::AudioProcessorValueTreeState::ParameterLayout params;
+
+    String oscPrefix = "osc";
+
+    for (int i = 1; i <= 1; ++i)
+    {
+        String id = String(i);
+        params.add(std::make_unique<AudioParameterInt>(oscPrefix + id + "Oct", "Octave" + id, -4, 4, 0));
+        params.add(std::make_unique<AudioParameterFloat>(oscPrefix + id + "Phase", "Phase" + id, 0, 1, 0));
+        params.add(std::make_unique<AudioParameterFloat>(oscPrefix + id + "Pan", "Pan" + id, NormalisableRange<float>(-1, 1), 0));
+        params.add(std::make_unique<AudioParameterFloat>(oscPrefix + id + "Lvl", "Level" + id, NormalisableRange<float>(0, 1), 1));
+        params.add(std::make_unique<AudioParameterChoice>(oscPrefix + id + "Wave", "Waveform" + id, StringArray{"Sine", "Sawtooth", "Square"}, 0));
+    }
+
+    return params;
 }
 
 //==============================================================================
