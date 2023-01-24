@@ -6,15 +6,15 @@ find_package(JUCE CONFIG REQUIRED)
 set(CMAKE_CXX_STANDARD 14)
 
 juce_add_plugin(Vinex
-        COMPANY_NAME "AutFly Audio"
+        COMPANY_NAME "hvid audio"
         IS_SYNTH TRUE
-        NEEDS_MIDI_INPUT FALSE
+        NEEDS_MIDI_INPUT TRUE
         NEEDS_MIDI_OUTPUT FALSE
         IS_MIDI_EFFECT FALSE
         # EDITOR_WANTS_KEYBOARD_FOCUS TRUE/FALSE
-        COPY_PLUGIN_AFTER_BUILD FALSE
-        PLUGIN_MANUFACTURER_CODE AFly
-        PLUGIN_CODE Vinx
+        COPY_PLUGIN_AFTER_BUILD TRUE
+        PLUGIN_MANUFACTURER_CODE Hvid
+        PLUGIN_CODE VinX
         FORMATS VST3 Standalone
         PRODUCT_NAME "Vinex")
 
@@ -23,7 +23,13 @@ juce_generate_juce_header(Vinex)
 target_sources(Vinex
         PRIVATE
         src/gui/PluginEditor.cpp
-        src/PluginProcessor.cpp)
+        src/gui/VinexColours.h
+        src/gui/VinexLookAndFeel.cpp
+        src/gui/VinexLookAndFeel.h
+        src/gui/Knob.cpp
+        src/gui/Knob.h
+        src/PluginProcessor.cpp
+        src/Constants.h)
 
 target_compile_definitions(Vinex
         PUBLIC
@@ -33,6 +39,7 @@ target_compile_definitions(Vinex
 
 target_link_libraries(Vinex
         PRIVATE
+        juce::juce_dsp
         juce::juce_audio_utils
         PUBLIC
         juce::juce_recommended_config_flags
