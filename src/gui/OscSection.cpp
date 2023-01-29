@@ -1,25 +1,14 @@
 #include "OscSection.h"
 
-OscSection::OscSection(const int id, VinexAudioProcessor& processor, juce::AudioProcessorValueTreeState& apvts) : Section("Oscillator"), processor(processor), apvts(apvts), prefix("osc" + std::to_string(id))
+OscSection::OscSection(const int id, VinexAudioProcessor& processor, juce::AudioProcessorValueTreeState& apvts) : Section("Oscillator"), processor(processor), apvts(apvts), prefix(std::string("osc") + std::to_string(id))
 , octaveKnob("Octave", prefix + "Oct", KnobSize::regular, apvts)
 , phaseKnob("Phase", prefix + "Phase", KnobSize::regular, apvts)
 , panKnob("Pan", prefix + "Pan", KnobSize::regular, apvts)
 , levelKnob("Level", prefix + "Lvl", KnobSize::regular, apvts)
 {
-    octaveKnob.setRange(-4, 4, 1);
-    octaveKnob.setValue(0);
     addAndMakeVisible(&octaveKnob);
-
-    phaseKnob.setRange(0, 1, 0);
-    phaseKnob.setValue(0);
     addAndMakeVisible(&phaseKnob);
-
-    levelKnob.setRange(0.0f, 1.0f, 0.01f);
-    levelKnob.setValue(1.0f);
     addAndMakeVisible(&levelKnob);
-
-    panKnob.setRange(-1.0f, 1.0f, 0);
-    panKnob.setValue(0);
     addAndMakeVisible(&panKnob);
 
     waveSelector.addItemList({"Sine", "Sawtooth", "Square"}, 1);
