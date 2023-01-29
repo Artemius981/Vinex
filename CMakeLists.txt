@@ -28,6 +28,8 @@ target_sources(Vinex
         src/gui/VinexLookAndFeel.h
         src/gui/Knob.cpp
         src/gui/Knob.h
+        src/gui/Section.cpp
+        src/gui/OscSection.cpp
         src/PluginProcessor.cpp
         src/Constants.h)
 

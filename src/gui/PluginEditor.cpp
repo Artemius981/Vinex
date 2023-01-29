@@ -5,10 +5,12 @@
 
 //==============================================================================
 VinexAudioProcessorEditor::VinexAudioProcessorEditor (VinexAudioProcessor& p, juce::AudioProcessorValueTreeState& apvts)
-    : AudioProcessorEditor (&p), audioProcessor (p), apvts(apvts)
+    : AudioProcessorEditor (&p), audioProcessor (p), apvts(apvts), oscSection(1, p, apvts)
 {
     setSize (constants::pluginWidth, constants::pluginHeight);
     setLookAndFeel(&vinexLookAndFeel);
+
+    addAndMakeVisible(&oscSection);
 }
 
 VinexAudioProcessorEditor::~VinexAudioProcessorEditor()
@@ -24,4 +26,6 @@ void VinexAudioProcessorEditor::paint (juce::Graphics& g)
 
 void VinexAudioProcessorEditor::resized()
 {
+    // TODO: remove hardcoded constants
+    oscSection.setBounds(10, 40, 370, 123);
 }

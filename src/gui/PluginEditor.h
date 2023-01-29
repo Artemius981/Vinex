@@ -4,6 +4,7 @@
 #include "../PluginProcessor.h"
 #include "VinexLookAndFeel.h"
 #include "Knob.h"
+#include "OscSection.h"
 
 //==============================================================================
 /**
@@ -23,6 +24,8 @@ private:
     juce::AudioProcessorValueTreeState& apvts;
 
     VinexLookAndFeel vinexLookAndFeel;
+
+    OscSection oscSection;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (VinexAudioProcessorEditor)
 };
