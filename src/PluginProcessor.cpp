@@ -1,5 +1,7 @@
 #include "PluginProcessor.h"
 #include "gui/PluginEditor.h"
+#include "dsp/SynthSound.h"
+#include "dsp/SynthVoice.h"
 
 //==============================================================================
 VinexAudioProcessor::VinexAudioProcessor()
@@ -13,8 +15,15 @@ VinexAudioProcessor::VinexAudioProcessor()
                      #endif
                        )
                        , apvts(*this, nullptr, juce::Identifier ("Vinex"), createParamLayout())
+                       , basicWaveforms()
 #endif
 {
+    synth.addSound(new SynthSound());
+
+    for (int i = 0; i < constants::numOfVoices; ++i)
+    {
+        synth.addVoice(new SynthVoice());
+    }
 }
 
 VinexAudioProcessor::~VinexAudioProcessor()
@@ -85,6 +94,19 @@ void VinexAudioProcessor::changeProgramName (int index, const juce::String& newN
 //==============================================================================
 void VinexAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
+    auto osc1Oct = apvts.getRawParameterValue("osc1Oct");
+    auto osc1Phase = apvts.getRawParameterValue("osc1Phase");
+    auto osc1Pan = apvts.getRawParameterValue("osc1Pan");
+    auto osc1Level = apvts.getRawParameterValue("osc1Lvl");
+
+    synth.setCurrentPlaybackSampleRate(sampleRate);
+    for(int i = 0; i < synth.getNumVoices(); ++i)
+    {
+        if (auto voice = dynamic_cast<SynthVoice*>(synth.getVoice(i)))
+        {
+            voice->setOscParams(0, osc1Oct, osc1Phase, osc1Pan, osc1Level);
+        }
+    }
 }
 
 void VinexAudioProcessor::releaseResources()
@@ -127,6 +149,9 @@ void VinexAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::
 
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
+
+    buffer.clear();
+    synth.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
 }
 
 //==============================================================================
@@ -174,6 +199,17 @@ juce::AudioProcessorValueTreeState::ParameterLayout VinexAudioProcessor::createP
     }
 
     return params;
+}
+
+void VinexAudioProcessor::setWavetable(int id)
+{
+    for(int i = 0; i < synth.getNumVoices(); ++i)
+    {
+        if (auto voice = dynamic_cast<SynthVoice*>(synth.getVoice(i)))
+        {
+            voice->setWavetable(basicWaveforms.getWTById(id));
+        }
+    }
 }
 
 //==============================================================================

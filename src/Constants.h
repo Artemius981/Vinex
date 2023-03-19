@@ -24,7 +24,7 @@ namespace constants
     constexpr float knobIndent = -2;
     constexpr float knobLabelHeight = 14;
 
-    constexpr int numOfVoices = 1;
+    constexpr int numOfVoices = 8;
     constexpr int fftOrder = 11;
     constexpr int wavetableSize = 1 << fftOrder;
     constexpr int numOfSubtables = 10;

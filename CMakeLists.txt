@@ -30,6 +30,11 @@ target_sources(Vinex
         src/gui/Knob.h
         src/gui/Section.cpp
         src/gui/OscSection.cpp
+        src/dsp/SynthVoice.cpp
+        src/dsp/Wavetable.cpp
+        src/dsp/WavetableOscillator.cpp
+        src/kissfft/kiss_fft.c
+        src/kissfft/kiss_fftr.c
         src/PluginProcessor.cpp
         src/Constants.h)
 

@@ -57,5 +57,7 @@ void OscSection::resized()
 
 void OscSection::changeWaveform()
 {
+    // temporary solution
+    processor.setWavetable(waveSelector.getSelectedId() - 1);
 }
 

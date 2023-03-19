@@ -1,6 +1,7 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include "dsp/BasicWaveformsGenerator.h"
 
 //==============================================================================
 /**
@@ -45,11 +46,16 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
+    void setWavetable(int id);
+
 private:
     juce::AudioProcessorValueTreeState::ParameterLayout createParamLayout();
 
 private:
     juce::AudioProcessorValueTreeState apvts;
+    BasicWaveformsGenerator basicWaveforms;
+
+    juce::Synthesiser synth;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (VinexAudioProcessor)
