@@ -2,6 +2,7 @@
 #include "gui/PluginEditor.h"
 #include "dsp/SynthSound.h"
 #include "dsp/SynthVoice.h"
+#include <iostream>
 
 //==============================================================================
 VinexAudioProcessor::VinexAudioProcessor()
@@ -24,6 +25,8 @@ VinexAudioProcessor::VinexAudioProcessor()
     {
         synth.addVoice(new SynthVoice());
     }
+
+    oversampling = std::make_unique<Oversampling>(getTotalNumOutputChannels(), Oversampling::FilterType::IIRCheby2);
 }
 
 VinexAudioProcessor::~VinexAudioProcessor()
@@ -99,7 +102,7 @@ void VinexAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
     auto osc1Pan = apvts.getRawParameterValue("osc1Pan");
     auto osc1Level = apvts.getRawParameterValue("osc1Lvl");
 
-    synth.setCurrentPlaybackSampleRate(sampleRate);
+    synth.setCurrentPlaybackSampleRate(constants::oversamplingRatio * sampleRate);
     for(int i = 0; i < synth.getNumVoices(); ++i)
     {
         if (auto voice = dynamic_cast<SynthVoice*>(synth.getVoice(i)))
@@ -107,6 +110,9 @@ void VinexAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
             voice->setOscParams(0, osc1Oct, osc1Phase, osc1Pan, osc1Level);
         }
     }
+
+    oversamplingBuffer.setSize(getTotalNumOutputChannels(), constants::oversamplingRatio * samplesPerBlock);
+    oversampling->setup(samplesPerBlock);
 }
 
 void VinexAudioProcessor::releaseResources()
@@ -143,15 +149,14 @@ bool VinexAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) co
 
 void VinexAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
-    juce::ScopedNoDenormals noDenormals;
-    auto totalNumInputChannels  = getTotalNumInputChannels();
-    auto totalNumOutputChannels = getTotalNumOutputChannels();
-
-    for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-        buffer.clear (i, 0, buffer.getNumSamples());
-
     buffer.clear();
-    synth.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
+    oversamplingBuffer.clear();
+    synth.renderNextBlock(oversamplingBuffer, midiMessages, 0, constants::oversamplingRatio * buffer.getNumSamples());
+
+    auto oversamplingInternalBuffer = oversampling->getUnprocessedUpsampleBlock(buffer.getNumSamples());
+    oversamplingInternalBuffer.copyFrom(oversamplingBuffer, 0, 0, constants::oversamplingRatio * buffer.getNumSamples());
+
+    oversampling->processSamplesDown(dsp::AudioBlock<float>(buffer));
 }
 
 //==============================================================================

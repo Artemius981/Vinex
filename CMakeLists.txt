@@ -22,21 +22,23 @@ juce_generate_juce_header(Vinex)
 
 target_sources(Vinex
         PRIVATE
+        src/PluginProcessor.cpp
         src/gui/PluginEditor.cpp
+
         src/gui/VinexColours.h
         src/gui/VinexLookAndFeel.cpp
-        src/gui/VinexLookAndFeel.h
         src/gui/Knob.cpp
-        src/gui/Knob.h
         src/gui/Section.cpp
         src/gui/OscSection.cpp
+
         src/dsp/SynthVoice.cpp
         src/dsp/Wavetable.cpp
         src/dsp/WavetableOscillator.cpp
+        src/dsp/Oversampling.cpp
         src/kissfft/kiss_fft.c
         src/kissfft/kiss_fftr.c
-        src/PluginProcessor.cpp
-        src/Constants.h)
+        src/Constants.h
+        src/DspConstants.h)
 
 target_compile_definitions(Vinex
         PUBLIC

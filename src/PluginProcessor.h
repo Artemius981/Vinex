@@ -2,6 +2,7 @@
 
 #include <JuceHeader.h>
 #include "dsp/BasicWaveformsGenerator.h"
+#include "dsp/Oversampling.h"
 
 //==============================================================================
 /**
@@ -54,6 +55,9 @@ private:
 private:
     juce::AudioProcessorValueTreeState apvts;
     BasicWaveformsGenerator basicWaveforms;
+
+    std::unique_ptr<Oversampling> oversampling;
+    juce::AudioBuffer<float> oversamplingBuffer;
 
     juce::Synthesiser synth;
 

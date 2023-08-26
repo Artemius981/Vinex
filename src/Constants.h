@@ -28,7 +28,8 @@ namespace constants
     constexpr int fftOrder = 11;
     constexpr int wavetableSize = 1 << fftOrder;
     constexpr int numOfSubtables = 10;
-    constexpr double defaultSampleRate = 44100.0f;
+    constexpr double defaultSampleRate = 44100.0;
+    constexpr int oversamplingRatio = 2;
 }
 
 #endif //VINEX_CONSTANTS_H
