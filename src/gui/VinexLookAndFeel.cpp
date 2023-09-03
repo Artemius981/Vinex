@@ -1,14 +1,31 @@
 #include "VinexLookAndFeel.h"
 #include "VinexColours.h"
+#include "BinaryData.h"
 
 VinexLookAndFeel::VinexLookAndFeel()
 {
-    LookAndFeel::getDefaultLookAndFeel().setDefaultSansSerifTypefaceName("Arial");
+    LookAndFeel::getDefaultLookAndFeel().setDefaultSansSerifTypeface(getFontTypeface(FontStyle::regular));
 }
 
-Font VinexLookAndFeel::getFont()
+Typeface::Ptr VinexLookAndFeel::getFontTypeface(FontStyle fontStyle)
 {
-    return Font("Arial", 16, Font::plain);
+    static const auto regularTypeface = Typeface::createSystemTypefaceFor(BinaryData::HankenGroteskRegular_ttf, BinaryData::HankenGroteskRegular_ttfSize);
+    static const auto semiBoldTypeface = Typeface::createSystemTypefaceFor(BinaryData::HankenGroteskSemiBold_ttf, BinaryData::HankenGroteskSemiBold_ttfSize);
+
+    switch (fontStyle)
+    {
+        case FontStyle::regular:
+            return regularTypeface;
+        case FontStyle::semiBold:
+            return semiBoldTypeface;
+        default:
+            return regularTypeface;
+    }
+}
+
+Font VinexLookAndFeel::getFont(FontStyle fontStyle)
+{
+    return {getFontTypeface(fontStyle)};
 }
 
 void

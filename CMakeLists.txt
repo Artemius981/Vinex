@@ -20,6 +20,11 @@ juce_add_plugin(Vinex
 
 juce_generate_juce_header(Vinex)
 
+juce_add_binary_data(VinexBinaryData
+        SOURCES
+        res/HankenGroteskRegular.ttf
+        res/HankenGroteskSemiBold.ttf)
+
 target_sources(Vinex
         PRIVATE
         src/PluginProcessor.cpp
@@ -48,6 +53,7 @@ target_compile_definitions(Vinex
 
 target_link_libraries(Vinex
         PRIVATE
+        VinexBinaryData
         juce::juce_dsp
         juce::juce_audio_utils
         PUBLIC
