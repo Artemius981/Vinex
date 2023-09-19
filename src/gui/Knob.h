@@ -5,6 +5,7 @@
 
 #include <JuceHeader.h>
 #include "../Constants.h"
+#include "VinexLookAndFeel.h"
 
 enum class KnobSize {
     small = 27,
@@ -23,10 +24,15 @@ public:
         slider.setPopupDisplayEnabled(true, false, nullptr);
         addAndMakeVisible(&slider);
 
-        label.setFont(constants::knobLabelHeight);
+        auto font = VinexLookAndFeel::getFont(VinexLookAndFeel::FontStyle::regular)
+                .withPointHeight(13)
+                .withExtraKerningFactor(-0.04);
+
+        label.setFont(font);
         label.setText(name, juce::dontSendNotification);
         label.setJustificationType(juce::Justification::centred);
         label.setMinimumHorizontalScale(1.0f);
+        label.setBorderSize (juce::BorderSize<int> (0));
         addAndMakeVisible(&label);
 
         attachment = std::make_unique<SliderAttachment>(apvts, paramId, slider);
@@ -41,6 +47,7 @@ public:
     void setValue(double newValue, NotificationType notification=sendNotificationAsync);
 
     void setKnobSize(KnobSize knobSize);
+    KnobSize getKnobSize() const;
 
 private:
     Slider slider;

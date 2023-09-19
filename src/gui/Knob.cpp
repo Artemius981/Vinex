@@ -19,6 +19,11 @@ void Knob::setKnobSize(KnobSize size)
     Knob::knobSize = size;
 }
 
+KnobSize Knob::getKnobSize() const
+{
+    return knobSize;
+}
+
 void Knob::setPosWithKnobSize(int x, int y, KnobSize size)
 {
     switch (size)

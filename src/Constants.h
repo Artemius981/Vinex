@@ -5,24 +5,36 @@
 
 namespace constants
 {
-    constexpr float pluginHeight = 365;
-    constexpr float pluginWidth = 700;
+    constexpr float pluginHeight = 431;
+    constexpr float pluginWidth = 721;
 
     constexpr float headerHeight = 70;
 
-    constexpr float blockHeaderHeight = 18;
+    constexpr float blockHeaderHeight = 24;
     constexpr float blockCornersRadius = 7;
-    constexpr float blockTitleSizePt = 14;
-    constexpr float blockContentPadding = 3;
+    constexpr float blockTitleSizePt = 16;
+    constexpr float blockContentPadding = 5;
 
-    constexpr int oscSectionVisualWidth = 175;
+    constexpr int oscSectionWidth = 356;
+    constexpr int oscSectionHeight = 149;
+    constexpr int oscSectionVisualizerWidth = 197;
+    constexpr int oscSectionVisualizerHeight = 116;
 
-    constexpr float knobRegularWidth = 50;
+    constexpr int envSectionWidth = 230;
+    constexpr int envSectionHeight = 206;
+
+    constexpr int filterSectionWidth = 249;
+    constexpr int filterSectionHeight = 206;
+
+    constexpr int lfoSectionWidth = 230;
+    constexpr int lfoSectionHeight = 206;
+
+    constexpr float knobRegularWidth = 41;
     constexpr float knobRegularHeight = 45;
-    constexpr float knobSmallWidth = 47;
+    constexpr float knobSmallWidth = 41;
     constexpr float knobSmallHeight = 39;
     constexpr float knobIndent = -2;
-    constexpr float knobLabelHeight = 14;
+    constexpr float knobLabelHeight = 17;
 
     constexpr int numOfVoices = 8;
     constexpr int fftOrder = 11;

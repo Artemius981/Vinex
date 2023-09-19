@@ -1,6 +1,7 @@
 #include "Section.h"
 #include "../Constants.h"
 #include "VinexColours.h"
+#include "VinexLookAndFeel.h"
 
 void Section::paint(Graphics &g)
 {
@@ -15,8 +16,11 @@ void Section::paint(Graphics &g)
 
     jassert(getName().isNotEmpty());
     g.setColour(vinex_colours::textFirst);
-    g.setFont(16);
-    g.drawText(getName(), 5, 1, 60, 16, Justification::left);
+
+    auto font = VinexLookAndFeel::getFont(VinexLookAndFeel::FontStyle::semiBold)
+            .withPointHeight(constants::blockTitleSizePt);
+    g.setFont(font);
+    g.drawText(getName(), 7, 2, 71, 21, Justification::left);
 }
 
 void Section::resized()

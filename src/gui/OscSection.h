@@ -9,12 +9,13 @@ class OscSection : public Section
 {
     typedef juce::AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
 public:
-    explicit OscSection(int id, VinexAudioProcessor& processor, juce::AudioProcessorValueTreeState& apvts);
+    OscSection(int id, VinexAudioProcessor& processor, juce::AudioProcessorValueTreeState& apvts);
 
     void paint(Graphics& g) override;
     void resized() override;
 
 private:
+    void performKnobLayout(Rectangle<float> bounds) const;
     void changeWaveform();
 
     VinexAudioProcessor& processor;
@@ -23,10 +24,8 @@ private:
     std::unique_ptr<ComboBoxAttachment> waveSelectorAttachment;
     String prefix;
 
-    Knob octaveKnob;
-    Knob phaseKnob;
-    Knob panKnob;
-    Knob levelKnob;
+    juce::OwnedArray<Knob> basicKnobs;
+    juce::OwnedArray<Knob> unisonKnobs;
     ComboBox waveSelector;
 };
 

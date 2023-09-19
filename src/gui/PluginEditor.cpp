@@ -27,5 +27,5 @@ void VinexAudioProcessorEditor::paint (juce::Graphics& g)
 void VinexAudioProcessorEditor::resized()
 {
     // TODO: remove hardcoded constants
-    oscSection.setBounds(10, 40, 370, 123);
+    oscSection.setBounds(3, 70, constants::oscSectionWidth, constants::oscSectionHeight);
 }
