@@ -1,4 +1,5 @@
 #include "OscSection.h"
+#include "VinexColours.h"
 
 OscSection::OscSection(const int id, VinexAudioProcessor& processor, juce::AudioProcessorValueTreeState& apvts) : Section("Oscillator"), processor(processor), apvts(apvts), prefix(std::string("osc") + std::to_string(id))
 {
@@ -15,6 +16,8 @@ OscSection::OscSection(const int id, VinexAudioProcessor& processor, juce::Audio
     waveSelector.addItemList({"Sine", "Sawtooth", "Square"}, 1);
     waveSelector.onChange = [this] {changeWaveform();};
     waveSelector.setSelectedId(1);
+    waveSelector.setColour(ComboBox::ColourIds::backgroundColourId, vinex_colours::comboBoxBackground);
+    waveSelector.setColour(ComboBox::ColourIds::outlineColourId, vinex_colours::comboBoxBackground);
     addAndMakeVisible(&waveSelector);
 
     waveSelectorAttachment = std::make_unique<ComboBoxAttachment>(apvts, prefix + "Wave", waveSelector);

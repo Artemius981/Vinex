@@ -84,23 +84,3 @@ VinexLookAndFeel::drawRotarySlider(Graphics &g, int x, int y, int width, int hei
     g.setColour(vinex_colours::knobPointer);
     g.fillPath(p);
 }
-
-void
-VinexLookAndFeel::drawComboBox(Graphics &g, int width, int height, bool isButtonDown, int buttonX, int buttonY,
-                               int buttonW, int buttonH, ComboBox &box)
-{
-    auto cornerSize = 7;
-    Rectangle<int> boxBounds (0, 0, width, height);
-
-    g.setColour (vinex_colours::comboBoxBackground);
-    g.fillRoundedRectangle (boxBounds.toFloat(), cornerSize);
-
-    Rectangle<int> arrowZone (width - 30, 0, 20, height);
-    Path path;
-    path.startNewSubPath ((float) arrowZone.getX() + 3.0f, (float) arrowZone.getCentreY() - 2.0f);
-    path.lineTo ((float) arrowZone.getCentreX(), (float) arrowZone.getCentreY() + 3.0f);
-    path.lineTo ((float) arrowZone.getRight() - 3.0f, (float) arrowZone.getCentreY() - 2.0f);
-
-    g.setColour (box.findColour (ComboBox::arrowColourId).withAlpha ((box.isEnabled() ? 0.9f : 0.2f)));
-    g.strokePath (path, PathStrokeType (2.0f));
-}
