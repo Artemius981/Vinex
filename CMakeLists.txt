@@ -35,6 +35,8 @@ target_sources(Vinex
         src/gui/Knob.cpp
         src/gui/Section.cpp
         src/gui/OscSection.cpp
+        src/gui/HeaderPanel.cpp
+        src/gui/PresetBrowser.cpp
 
         src/dsp/SynthVoice.cpp
         src/dsp/Wavetable.cpp
@@ -43,7 +45,9 @@ target_sources(Vinex
         src/kissfft/kiss_fft.c
         src/kissfft/kiss_fftr.c
         src/Constants.h
-        src/DspConstants.h)
+        src/DspConstants.h
+
+        src/service/PresetManager.cpp)
 
 target_compile_definitions(Vinex
         PUBLIC

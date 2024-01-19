@@ -19,6 +19,11 @@ VinexAudioProcessor::VinexAudioProcessor()
                        , basicWaveforms()
 #endif
 {
+    apvts.state.setProperty(service::PresetManager::presetNameProperty, "", nullptr);
+    apvts.state.setProperty("version", ProjectInfo::versionString, nullptr);
+
+    presetManager = std::make_unique<service::PresetManager>(apvts);
+
     synth.addSound(new SynthSound());
 
     for (int i = 0; i < constants::numOfVoices; ++i)
@@ -200,6 +205,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout VinexAudioProcessor::createP
         params.add(std::make_unique<AudioParameterFloat>(oscPrefix + id + "Phase", "Phase" + id, 0, 1, 0));
         params.add(std::make_unique<AudioParameterFloat>(oscPrefix + id + "Pan", "Pan" + id, NormalisableRange<float>(-1, 1), 0));
         params.add(std::make_unique<AudioParameterFloat>(oscPrefix + id + "Lvl", "Level" + id, NormalisableRange<float>(0, 1), 1));
+        params.add(std::make_unique<AudioParameterFloat>(oscPrefix + id + "Detune", "Detune" + id, NormalisableRange<float>(0, 1), 0.25));
+        params.add(std::make_unique<AudioParameterInt>(oscPrefix + id + "Blend", "Blend" + id, 0, 100, 75));
         params.add(std::make_unique<AudioParameterChoice>(oscPrefix + id + "Wave", "Waveform" + id, StringArray{"Sine", "Sawtooth", "Square"}, 0));
     }
 
@@ -215,6 +222,11 @@ void VinexAudioProcessor::setWavetable(int id)
             voice->setWavetable(basicWaveforms.getWTById(id));
         }
     }
+}
+
+service::PresetManager& VinexAudioProcessor::getPresetManager() const
+{
+    return *presetManager;
 }
 
 //==============================================================================

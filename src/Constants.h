@@ -8,7 +8,14 @@ namespace constants
     constexpr float pluginHeight = 431;
     constexpr float pluginWidth = 721;
 
-    constexpr float headerHeight = 70;
+    constexpr float headerHeight = 67;
+
+    constexpr int presetBrowserWidth = 223;
+    constexpr int presetBrowserHeight = 57;
+    constexpr int presetBrowserButtonWidth = 52;
+    constexpr int presetBrowserButtonHeight = 21;
+    constexpr int presetBrowserSelectorWidth = 223;
+    constexpr int presetBrowserSelectorHeight = 33;
 
     constexpr float blockHeaderHeight = 24;
     constexpr float blockCornersRadius = 7;

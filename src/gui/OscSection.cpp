@@ -7,6 +7,9 @@ OscSection::OscSection(const int id, VinexAudioProcessor& processor, juce::Audio
     basicKnobs.add(new Knob("Pan", prefix + "Pan", KnobSize::regular, apvts));
     basicKnobs.add(new Knob("Level", prefix + "Lvl", KnobSize::regular, apvts));
 
+    unisonKnobs.add(new Knob("Detune", prefix + "Detune", KnobSize::regular, apvts));
+    unisonKnobs.add(new Knob("Blend", prefix + "Blend", KnobSize::regular, apvts));
+
     for (auto knob : basicKnobs)
         addAndMakeVisible(knob);
 

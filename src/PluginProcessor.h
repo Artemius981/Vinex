@@ -3,6 +3,7 @@
 #include <JuceHeader.h>
 #include "dsp/BasicWaveformsGenerator.h"
 #include "dsp/Oversampling.h"
+#include "service/PresetManager.h"
 
 //==============================================================================
 /**
@@ -47,6 +48,8 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
+    service::PresetManager& getPresetManager() const;
+
     void setWavetable(int id);
 
 private:
@@ -55,6 +58,8 @@ private:
 private:
     juce::AudioProcessorValueTreeState apvts;
     BasicWaveformsGenerator basicWaveforms;
+
+    std::unique_ptr<service::PresetManager> presetManager;
 
     std::unique_ptr<Oversampling> oversampling;
     juce::AudioBuffer<float> oversamplingBuffer;

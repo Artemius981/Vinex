@@ -10,6 +10,8 @@ namespace vinex_colours
     const Colour blockBackground (0xff3F3F3F);
     const Colour blockHeader (0xff2E2E2E);
 
+    const Colour headerBackground(0xff323232);
+
     const Colour textFirst (0xffFFFFFF);
     const Colour textSecond (0xffF5F5F5);
     const Colour textThird (0xffB8B8B8);
@@ -26,6 +28,10 @@ namespace vinex_colours
     const Colour wavetableCurve (0xff35B56B);
 
     const Colour comboBoxBackground (0xff101010);
+    const Colour comboBoxOutline (0xff15657E);
+
+    const Colour buttonBackground(0xff101010);
+    const Colour buttonOutline(0xff15657E);
 }
 
 enum class OldVinexColours : std::uint32_t {

@@ -5,6 +5,7 @@
 #include "VinexLookAndFeel.h"
 #include "Knob.h"
 #include "OscSection.h"
+#include "HeaderPanel.h"
 
 //==============================================================================
 /**
@@ -25,6 +26,7 @@ private:
 
     VinexLookAndFeel vinexLookAndFeel;
 
+    HeaderPanel header;
     OscSection oscSection;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (VinexAudioProcessorEditor)
