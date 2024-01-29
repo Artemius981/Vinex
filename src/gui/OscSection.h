@@ -5,20 +5,22 @@
 #include "Knob.h"
 #include "../PluginProcessor.h"
 
-class OscSection : public Section
+class OscSection : public Section, ValueTree::Listener
 {
     typedef juce::AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
 public:
-    OscSection(int id, VinexAudioProcessor& processor, juce::AudioProcessorValueTreeState& apvts);
+    OscSection(int id, service::WavetableManager& wavetableManager, juce::AudioProcessorValueTreeState& apvts);
+    ~OscSection() override;
 
     void paint(Graphics& g) override;
     void resized() override;
+    void valueTreeRedirected(ValueTree &treeWhichHasBeenChanged) override;
 
 private:
     void performKnobLayout(Rectangle<float> bounds) const;
-    void changeWaveform();
+    void loadWavetables();
 
-    VinexAudioProcessor& processor;
+    service::WavetableManager& wavetableManager;
     juce::AudioProcessorValueTreeState& apvts;
 
     std::unique_ptr<ComboBoxAttachment> waveSelectorAttachment;

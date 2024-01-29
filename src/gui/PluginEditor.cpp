@@ -5,7 +5,7 @@
 
 //==============================================================================
 VinexAudioProcessorEditor::VinexAudioProcessorEditor (VinexAudioProcessor& p, juce::AudioProcessorValueTreeState& apvts)
-    : AudioProcessorEditor (&p), audioProcessor (p), apvts(apvts), header(p.getPresetManager()), oscSection(1, p, apvts)
+    : AudioProcessorEditor (&p), audioProcessor (p), apvts(apvts), header(p.getPresetManager()), oscSection(osc1, p.getWavetableManager(osc1), apvts)
 {
     setSize (constants::pluginWidth, constants::pluginHeight);
     setLookAndFeel(&vinexLookAndFeel);

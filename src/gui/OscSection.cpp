@@ -1,7 +1,7 @@
 #include "OscSection.h"
 #include "VinexColours.h"
 
-OscSection::OscSection(const int id, VinexAudioProcessor& processor, juce::AudioProcessorValueTreeState& apvts) : Section("Oscillator"), processor(processor), apvts(apvts), prefix(std::string("osc") + std::to_string(id))
+OscSection::OscSection(const int id, service::WavetableManager& wavetableManager, juce::AudioProcessorValueTreeState& apvts) : Section("Oscillator"), wavetableManager(wavetableManager), apvts(apvts), prefix(std::string("osc") + std::to_string(id))
 {
     basicKnobs.add(new Knob("Phase", prefix + "Phase", KnobSize::regular, apvts));
     basicKnobs.add(new Knob("Pan", prefix + "Pan", KnobSize::regular, apvts));
@@ -16,14 +16,20 @@ OscSection::OscSection(const int id, VinexAudioProcessor& processor, juce::Audio
     for (auto knob : unisonKnobs)
         addAndMakeVisible(knob);
 
-    waveSelector.addItemList({"Sine", "Sawtooth", "Square"}, 1);
-    waveSelector.onChange = [this] {changeWaveform();};
-    waveSelector.setSelectedId(1);
+    loadWavetables();
+    waveSelector.onChange = [&] {
+        wavetableManager.loadWavetable(waveSelector.getItemText(waveSelector.getSelectedItemIndex()));
+    };
     waveSelector.setColour(ComboBox::ColourIds::backgroundColourId, vinex_colours::comboBoxBackground);
     waveSelector.setColour(ComboBox::ColourIds::outlineColourId, vinex_colours::comboBoxBackground);
     addAndMakeVisible(&waveSelector);
 
-    waveSelectorAttachment = std::make_unique<ComboBoxAttachment>(apvts, prefix + "Wave", waveSelector);
+    apvts.state.addListener(this);
+}
+
+OscSection::~OscSection()
+{
+    apvts.state.removeListener(this);
 }
 
 void OscSection::paint(Graphics &g)
@@ -44,6 +50,14 @@ void OscSection::resized()
     // TODO: Visualiser setBounds(bounds.removeFromRight(constants::oscSectionVisualWidth))
     bounds.removeFromRight(constants::oscSectionVisualizerWidth + constants::blockContentPadding);
     performKnobLayout(bounds);
+}
+
+void OscSection::valueTreeRedirected(ValueTree& treeWhichHasBeenChanged)
+{
+    const auto wavetablesTree = apvts.state.getChildWithName("wavetables");
+    const auto newWavetableName = wavetablesTree.getProperty(prefix, String()).toString();
+    const auto wavetables = wavetableManager.getWavetables(false);
+    waveSelector.setSelectedItemIndex(wavetables->indexOf(newWavetableName), dontSendNotification);
 }
 
 void OscSection::performKnobLayout(Rectangle<float> bounds) const
@@ -117,8 +131,11 @@ void OscSection::performKnobLayout(Rectangle<float> bounds) const
     flex.performLayout(bounds);
 }
 
-void OscSection::changeWaveform()
+void OscSection::loadWavetables()
 {
-    // temporary solution
-    processor.setWavetable(waveSelector.getSelectedId() - 1);
+    waveSelector.clear(dontSendNotification);
+    const auto wavetables = wavetableManager.getWavetables(true);
+    const auto currentWavetable = wavetableManager.getCurrentWavetableName();
+    waveSelector.addItemList(*wavetables, 1);
+    waveSelector.setSelectedItemIndex(wavetables->indexOf(currentWavetable), dontSendNotification);
 }

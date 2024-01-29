@@ -16,13 +16,18 @@ VinexAudioProcessor::VinexAudioProcessor()
                      #endif
                        )
                        , apvts(*this, nullptr, juce::Identifier ("Vinex"), createParamLayout())
-                       , basicWaveforms()
 #endif
 {
     apvts.state.setProperty(service::PresetManager::presetNameProperty, "", nullptr);
     apvts.state.setProperty("version", ProjectInfo::versionString, nullptr);
 
+    auto wavetablesTree = apvts.state.getOrCreateChildWithName("wavetables", nullptr);
     presetManager = std::make_unique<service::PresetManager>(apvts);
+    for (int id = osc1; id < oscCount; ++id)
+    {
+        wavetablesTree.setProperty("osc" + String(id), "Init", nullptr);
+        wavetableManagers[id] = std::make_unique<service::WavetableManager>(synth, apvts, static_cast<OscillatorId>(id));
+    }
 
     synth.addSound(new SynthSound());
 
@@ -102,17 +107,20 @@ void VinexAudioProcessor::changeProgramName (int index, const juce::String& newN
 //==============================================================================
 void VinexAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    auto osc1Oct = apvts.getRawParameterValue("osc1Oct");
-    auto osc1Phase = apvts.getRawParameterValue("osc1Phase");
-    auto osc1Pan = apvts.getRawParameterValue("osc1Pan");
-    auto osc1Level = apvts.getRawParameterValue("osc1Lvl");
-
     synth.setCurrentPlaybackSampleRate(constants::oversamplingRatio * sampleRate);
-    for(int i = 0; i < synth.getNumVoices(); ++i)
+    for (int id = osc1; id < oscCount; ++id)
     {
-        if (auto voice = dynamic_cast<SynthVoice*>(synth.getVoice(i)))
+        const auto prefix = String("osc") + String(id);
+        auto octParam = apvts.getRawParameterValue(prefix + "Oct");
+        auto phaseParam = apvts.getRawParameterValue(prefix + "Phase");
+        auto panParam = apvts.getRawParameterValue(prefix + "Pan");
+        auto lvlParam = apvts.getRawParameterValue(prefix + "Lvl");
+        for(int i = 0; i < synth.getNumVoices(); ++i)
         {
-            voice->setOscParams(0, osc1Oct, osc1Phase, osc1Pan, osc1Level);
+            if (auto voice = dynamic_cast<SynthVoice*>(synth.getVoice(i)))
+            {
+                voice->setOscParams(static_cast<OscillatorId>(id), octParam, phaseParam, panParam, lvlParam);
+            }
         }
     }
 
@@ -198,7 +206,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout VinexAudioProcessor::createP
 
     String oscPrefix = "osc";
 
-    for (int i = 1; i <= 1; ++i)
+    for (int i = osc1; i < oscCount; ++i)
     {
         String id = String(i);
         params.add(std::make_unique<AudioParameterInt>(oscPrefix + id + "Oct", "Octave" + id, -4, 4, 0));
@@ -207,26 +215,19 @@ juce::AudioProcessorValueTreeState::ParameterLayout VinexAudioProcessor::createP
         params.add(std::make_unique<AudioParameterFloat>(oscPrefix + id + "Lvl", "Level" + id, NormalisableRange<float>(0, 1), 1));
         params.add(std::make_unique<AudioParameterFloat>(oscPrefix + id + "Detune", "Detune" + id, NormalisableRange<float>(0, 1), 0.25));
         params.add(std::make_unique<AudioParameterInt>(oscPrefix + id + "Blend", "Blend" + id, 0, 100, 75));
-        params.add(std::make_unique<AudioParameterChoice>(oscPrefix + id + "Wave", "Waveform" + id, StringArray{"Sine", "Sawtooth", "Square"}, 0));
     }
 
     return params;
 }
 
-void VinexAudioProcessor::setWavetable(int id)
-{
-    for(int i = 0; i < synth.getNumVoices(); ++i)
-    {
-        if (auto voice = dynamic_cast<SynthVoice*>(synth.getVoice(i)))
-        {
-            voice->setWavetable(basicWaveforms.getWTById(id));
-        }
-    }
-}
-
 service::PresetManager& VinexAudioProcessor::getPresetManager() const
 {
     return *presetManager;
+}
+
+service::WavetableManager& VinexAudioProcessor::getWavetableManager(OscillatorId oscId) const
+{
+    return *wavetableManagers[oscId];
 }
 
 //==============================================================================

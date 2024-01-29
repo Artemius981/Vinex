@@ -1,9 +1,9 @@
 #pragma once
 
 #include <JuceHeader.h>
-#include "dsp/BasicWaveformsGenerator.h"
 #include "dsp/Oversampling.h"
 #include "service/PresetManager.h"
+#include "service/WavetableManager.h"
 
 //==============================================================================
 /**
@@ -49,6 +49,7 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
     service::PresetManager& getPresetManager() const;
+    service::WavetableManager& getWavetableManager(OscillatorId oscId) const;
 
     void setWavetable(int id);
 
@@ -57,9 +58,9 @@ private:
 
 private:
     juce::AudioProcessorValueTreeState apvts;
-    BasicWaveformsGenerator basicWaveforms;
 
     std::unique_ptr<service::PresetManager> presetManager;
+    std::array<std::unique_ptr<service::WavetableManager>, oscCount> wavetableManagers;
 
     std::unique_ptr<Oversampling> oversampling;
     juce::AudioBuffer<float> oversamplingBuffer;

@@ -47,7 +47,8 @@ target_sources(Vinex
         src/Constants.h
         src/DspConstants.h
 
-        src/service/PresetManager.cpp)
+        src/service/PresetManager.cpp
+        src/service/WavetableManager.cpp)
 
 target_compile_definitions(Vinex
         PUBLIC
