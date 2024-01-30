@@ -26,6 +26,7 @@ namespace constants
     constexpr int oscSectionHeight = 149;
     constexpr int oscSectionVisualizerWidth = 197;
     constexpr int oscSectionVisualizerHeight = 116;
+    constexpr int oscSectionCurveHeight = 61;
 
     constexpr int envSectionWidth = 230;
     constexpr int envSectionHeight = 206;

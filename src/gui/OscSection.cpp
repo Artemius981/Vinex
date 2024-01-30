@@ -1,7 +1,9 @@
 #include "OscSection.h"
 #include "VinexColours.h"
 
-OscSection::OscSection(const int id, service::WavetableManager& wavetableManager, juce::AudioProcessorValueTreeState& apvts) : Section("Oscillator"), wavetableManager(wavetableManager), apvts(apvts), prefix(std::string("osc") + std::to_string(id))
+OscSection::OscSection(const int id, service::WavetableManager& wavetableManager, juce::AudioProcessorValueTreeState& apvts)
+    : Section("Oscillator"), wavetableManager(wavetableManager), apvts(apvts),
+      prefix(std::string("osc") + std::to_string(id)), visualizer(wavetableManager)
 {
     basicKnobs.add(new Knob("Phase", prefix + "Phase", KnobSize::regular, apvts));
     basicKnobs.add(new Knob("Pan", prefix + "Pan", KnobSize::regular, apvts));
@@ -19,10 +21,12 @@ OscSection::OscSection(const int id, service::WavetableManager& wavetableManager
     loadWavetables();
     waveSelector.onChange = [&] {
         wavetableManager.loadWavetable(waveSelector.getItemText(waveSelector.getSelectedItemIndex()));
+        visualizer.repaint();
     };
     waveSelector.setColour(ComboBox::ColourIds::backgroundColourId, vinex_colours::comboBoxBackground);
     waveSelector.setColour(ComboBox::ColourIds::outlineColourId, vinex_colours::comboBoxBackground);
     addAndMakeVisible(&waveSelector);
+    addAndMakeVisible(&visualizer);
 
     apvts.state.addListener(this);
 }
@@ -47,8 +51,8 @@ void OscSection::resized()
     bounds.removeFromTop(constants::blockHeaderHeight);
     bounds.reduce(constants::blockContentPadding, constants::blockContentPadding);
 
-    // TODO: Visualiser setBounds(bounds.removeFromRight(constants::oscSectionVisualWidth))
-    bounds.removeFromRight(constants::oscSectionVisualizerWidth + constants::blockContentPadding);
+    visualizer.setBounds(bounds.removeFromRight(constants::oscSectionVisualizerWidth).toNearestInt());
+    bounds.removeFromRight(constants::blockContentPadding);
     performKnobLayout(bounds);
 }
 
@@ -58,6 +62,7 @@ void OscSection::valueTreeRedirected(ValueTree& treeWhichHasBeenChanged)
     const auto newWavetableName = wavetablesTree.getProperty(prefix, String()).toString();
     const auto wavetables = wavetableManager.getWavetables(false);
     waveSelector.setSelectedItemIndex(wavetables->indexOf(newWavetableName), dontSendNotification);
+    visualizer.repaint();
 }
 
 void OscSection::performKnobLayout(Rectangle<float> bounds) const

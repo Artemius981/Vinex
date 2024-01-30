@@ -37,6 +37,7 @@ target_sources(Vinex
         src/gui/OscSection.cpp
         src/gui/HeaderPanel.cpp
         src/gui/PresetBrowser.cpp
+        src/gui/WavetableVisualizer.cpp
 
         src/dsp/SynthVoice.cpp
         src/dsp/Wavetable.cpp

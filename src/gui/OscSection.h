@@ -3,6 +3,7 @@
 
 #include "Section.h"
 #include "Knob.h"
+#include "WavetableVisualizer.h"
 #include "../PluginProcessor.h"
 
 class OscSection : public Section, ValueTree::Listener
@@ -29,6 +30,7 @@ private:
     juce::OwnedArray<Knob> basicKnobs;
     juce::OwnedArray<Knob> unisonKnobs;
     ComboBox waveSelector;
+    WavetableVisualizer visualizer;
 };
 
 

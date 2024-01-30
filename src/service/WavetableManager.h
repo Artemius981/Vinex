@@ -16,12 +16,15 @@ namespace service
 
         void loadWavetable(const String& wavetableName);
         String getCurrentWavetableName() const;
+        std::vector<float> getCurrentWavetableData();
         const StringArray* getWavetables(bool refreshNeeded = false);
         void refreshWavetables();
 
         void valueTreeRedirected(ValueTree& treeWhichHasBeenChanged) override;
 
     private:
+        std::vector<float> getWavetableData(const String& wavetableName);
+
         Synthesiser& synth;
         AudioProcessorValueTreeState& apvts;
         AudioFormatManager formatManager;

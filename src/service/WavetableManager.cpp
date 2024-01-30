@@ -32,24 +32,9 @@ namespace service
 
     void WavetableManager::loadWavetable(const String& wavetableName)
     {
-        if (wavetableName.isEmpty())
+        auto wavetable = getWavetableData(wavetableName);
+        if (wavetable.empty())
             return;
-
-        const auto wavetableFile = defaultDirectory.getChildFile(wavetableName + ".wav");
-        if (!wavetableFile.existsAsFile())
-            return;
-
-        std::unique_ptr<AudioFormatReader> reader{formatManager.createReaderFor(wavetableFile)};
-        if (reader == nullptr)
-            return;
-
-        AudioBuffer<float> buffer(reader->numChannels, reader->lengthInSamples);
-        reader->read(&buffer, 0, reader->lengthInSamples, 0, true, true);
-
-        std::vector<float> wavetable(reader->lengthInSamples);
-        const auto bufPtr = buffer.getReadPointer(0);
-        for (int i = 0; i < reader->lengthInSamples; ++i)
-            wavetable[i] = bufPtr[i];
 
         for (int i = 0; i < synth.getNumVoices(); ++i)
         {
@@ -64,6 +49,11 @@ namespace service
     String WavetableManager::getCurrentWavetableName() const
     {
         return currentWavetable.toString();
+    }
+
+    std::vector<float> WavetableManager::getCurrentWavetableData()
+    {
+        return getWavetableData(currentWavetable.toString());
     }
 
     const StringArray* WavetableManager::getWavetables(bool refreshNeeded)
@@ -88,5 +78,29 @@ namespace service
         auto wavetablesTree = apvts.state.getChildWithName("wavetables");
         currentWavetable.referTo(wavetablesTree.getPropertyAsValue("osc" + String(oscId), nullptr));
         loadWavetable(currentWavetable.toString());
+    }
+
+    std::vector<float> WavetableManager::getWavetableData(const String& wavetableName)
+    {
+        if (wavetableName.isEmpty())
+            return {};
+
+        const auto wavetableFile = defaultDirectory.getChildFile(wavetableName + ".wav");
+        if (!wavetableFile.existsAsFile())
+            return {};
+
+        std::unique_ptr<AudioFormatReader> reader{formatManager.createReaderFor(wavetableFile)};
+        if (reader == nullptr)
+            return {};
+
+        AudioBuffer<float> buffer(reader->numChannels, reader->lengthInSamples);
+        reader->read(&buffer, 0, reader->lengthInSamples, 0, true, true);
+
+        std::vector<float> wavetable(reader->lengthInSamples);
+        const auto bufPtr = buffer.getReadPointer(0);
+        for (int i = 0; i < reader->lengthInSamples; ++i)
+            wavetable[i] = bufPtr[i];
+
+        return wavetable;
     }
 }
